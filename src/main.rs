@@ -27,7 +27,7 @@ fn main() {
     println!("- - - - - - - - - - - -\n");
 
     // Initialize the grid with zeros
-    println!("Pleae enter the file name for the board: ");
+    println!("Enter input file: ");
     let filename = String::from("./unsolved/") + &get_input();
 
     let mut board = read_file(filename);
