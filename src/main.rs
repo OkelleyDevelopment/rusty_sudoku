@@ -28,7 +28,7 @@ fn main() {
     // Initialize the grid with zeros
     //let mut board: Vec<usize> = vec![0; SIZE * SIZE];
     //file input
-    let filename = get_input();
+    let filename = String::from("./unsolved/") + &get_input();
     let mut board = read_file(filename);
     println!("\nThe starting board:");
 
