@@ -63,7 +63,7 @@ fn write_to_file(board: &mut Vec<usize>) {
 
     for i in 0..SIZE {
         if i % 3 == 0 && i != 0 {
-            solved = String::from(solved) + ("-------------------------\n");
+            solved = solved + "-------------------------\n";
         }
         for j in 0..SIZE {
             if j % 3 == 0 && j != 0 {
@@ -77,11 +77,10 @@ fn write_to_file(board: &mut Vec<usize>) {
             }
         }
         solved = solved + "\n";
-
-        outfile
-            .write_all(solved.as_bytes())
-            .unwrap_or_else(|err| panic!("Board couldn't be written: {}", err));
     }
+    outfile
+        .write_all(solved.as_bytes())
+        .unwrap_or_else(|err| panic!("Board couldn't be written: {}", err));
 }
 
 /**
