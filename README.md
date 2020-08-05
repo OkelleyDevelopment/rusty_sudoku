@@ -1,4 +1,4 @@
-# Rusty Sudoku Solver
+# A Rusty Sudoku Solver
 
 ![Project Title](./utils/project_title.png)
 
