@@ -6,31 +6,52 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::process;
 
+// Constant representing the size of the board (X x Y)
 const SIZE: usize = 9;
 
+/**
+ * The main function or driver of the program. Initializes the
+ * mutable board variable and then calls the functions to attempt
+ * solving the board.
+ *
+ * Arguments:
+ *      None
+ *
+ * Returns:
+ *      None
+ */
 fn main() {
     println!("\n- - - - - - - - - - - -");
     println!("| Rusty Sudoku Solver |");
     println!("- - - - - - - - - - - -\n");
 
     // Initialize the grid with zeros
-    let mut grid: Vec<usize> = vec![0; SIZE * SIZE];
+    //let mut board: Vec<usize> = vec![0; SIZE * SIZE];
     //file input
-    grid = read_file();
-    println!(" The starting board:\n");
+    let filename = get_input();
+    let mut board = read_file(filename);
+    println!("\nThe starting board:");
 
-    display_board(&mut grid);
+    display_board(&mut board);
 
-    if solve_board(&mut grid) == true {
-        println!(" Solution found!\n");
-        display_board(&mut grid);
+    if solve_board(&mut board) == true {
+        println!("\nSolution found!");
+        display_board(&mut board);
     } else {
-        println!(" No solution found.");
+        println!("No solution found.");
     }
-
     process::exit(0);
 }
 
+/**
+ * A function to display the board.
+ *
+ * Arguments:
+ *      grid - the game board being printed
+ *
+ * Returns:
+ *      None
+ */
 fn display_board(grid: &mut Vec<usize>) {
     for i in 0..SIZE {
         if i % 3 == 0 && i != 0 {
@@ -42,53 +63,89 @@ fn display_board(grid: &mut Vec<usize>) {
             }
 
             if j == 8 {
-                print!("{}\n", grid[i * SIZE + j]);
+                print!("{}", grid[i * SIZE + j]);
+            } else {
+                print!("{} ", grid[i * SIZE + j]);
             }
-            print!("{} ", grid[i * SIZE + j]);
+            io::stdout().flush().expect("Could not flush");
         }
-    }
-    println!(" ");
-}
-
-fn remove_newlines(s: &mut String) {
-    while s.ends_with('\n') || s.ends_with('\r') {
-        s.pop();
+        println!(" ");
     }
 }
 
+/**
+ * A function to get user input for the filename of the sudoku
+ * board.
+ *
+ * Arguments:
+ *      None
+ *
+ * Returns:
+ *      String - the filename
+ *
+ */
 fn get_input() -> String {
+    println!("Pleae enter the file name for the board: ");
     let mut input = String::new();
 
     while input == String::new() {
-        io::stdin().read_line(&mut input);
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Error with reading input");
     }
-    return input;
+    return input.trim().to_string();
 }
 
-// this function will read in an unsolved grid
-// and then parse the file into a list of ints
-fn read_file() -> Vec<usize> {
-    io::stdout().flush().expect("Could not flush stdout");
-
+/**
+ * This function will read in an unsolved board and
+ * then parse the file into a Vector representing the
+ * board for the program.
+ *
+ * Arguments:
+ *      filename - A mutable reference to a String containing the file
+ *                 name for the sudoku board
+ *
+ * Returns:
+ *      Vec<usize> - The game board
+ */
+fn read_file(mut filename: String) -> Vec<usize> {
     let mut grid: Vec<usize> = vec![];
-    let mut filename;
+    let mut file = File::open(&filename);
 
-    while let Err(_) = File::open(&filename) {
-        println!("Please enter the board to solve: ");
+    while file.is_err() {
         filename = get_input();
+        file = File::open(&filename);
     }
-
-    let mut file = File::open(filename).expect("Can't open the file!");
-    let reader = BufReader::new(file).lines();
+    let reader = BufReader::new(file.unwrap());
 
     for line in reader.lines() {
         let line = line.unwrap();
-        let parsed = line.parse::<usize>().expect("Failed to parse line");
-        grid.push(parsed);
+        let chars: Vec<char> = line.chars().collect();
+        for c in chars {
+            if !c.is_whitespace() {
+                grid.push(c.to_digit(10).unwrap() as usize);
+            }
+        }
     }
     return grid;
 }
 
+/**
+ * A function to find the next position in the board to fill in.
+ *
+ * Arguments:
+ *      board - A mutable reference to a Vector representing the board
+ *      row - A mutable reference to the row index
+ *      col - A mutable reference to the column index
+ *
+ * Updates:
+ *      row - Updates the value of the row variable
+ *      col - Updates the value of the column variable
+ *
+ * Return:
+ *      bool - True or False if a spot is found
+ *
+ */
 fn locate(board: &mut Vec<usize>, row: &mut usize, col: &mut usize) -> bool {
     for i in 0..SIZE {
         for j in 0..SIZE {
@@ -102,6 +159,17 @@ fn locate(board: &mut Vec<usize>, row: &mut usize, col: &mut usize) -> bool {
     return false;
 }
 
+/**
+ * A function that checks if the current value is a valid valuue.
+ *
+ * Arguments:
+ *      board - A mutable reference to a Vector representing the board
+ *      num - The current value being checked
+ *      pos - a tuple representing the (X,Y) position in the board.
+ *
+ * Return:
+ *      bool - True or False depending on if the num is value
+ */
 fn is_valid(board: &mut Vec<usize>, num: usize, pos: (usize, usize)) -> bool {
     // Check the row
     for i in 0..SIZE {
@@ -130,10 +198,22 @@ fn is_valid(board: &mut Vec<usize>, num: usize, pos: (usize, usize)) -> bool {
     return true;
 }
 
-// Solve the board
+/**
+ * A function that uses a backtracking algorithm while
+ * attempting to solve a sudoku board
+ *
+ * Arguments:
+ *      board - A mutable reference to a Vector representing the board
+ *
+ * Returns:
+ *      bool - True or False depending on whether the board is solved.
+ */
 fn solve_board(board: &mut Vec<usize>) -> bool {
+    // Variable for the row index
     let mut row: usize = 0;
+    // Variable for the column index
     let mut col: usize = 0;
+    // The tuple for the (x,y) tuple
     let mut pos: (usize, usize) = (1000, 1000);
 
     // First new to find the first available cell
@@ -142,22 +222,22 @@ fn solve_board(board: &mut Vec<usize>) -> bool {
     if (!located) {
         return true;
     }
-
+    // Set the position
     pos = (row, col);
 
     // Now find the next open cell and fill in the digit
     for n in 1..=9 {
         if is_valid(board, n, pos) == true {
-            // if valid set the position to the number
+            // If valid set the position to the number
             board[pos.0 * SIZE + pos.1] = n;
-            // check if valid number is valid for the rest
+            // Check if valid number is valid for the rest
             if solve_board(board) {
                 return true;
             }
-
-            // reset and backtrack
+            // Reset and backtrack
             board[pos.0 * SIZE + pos.1] = 0;
         }
     }
+    // Return false if board is not solveable currently
     return false;
 }
