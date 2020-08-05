@@ -4,6 +4,7 @@ use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 use std::io::BufReader;
+use std::path::Path;
 use std::process;
 
 // Constant representing the size of the board (X x Y)
@@ -26,9 +27,9 @@ fn main() {
     println!("- - - - - - - - - - - -\n");
 
     // Initialize the grid with zeros
-    //let mut board: Vec<usize> = vec![0; SIZE * SIZE];
-    //file input
+    println!("Pleae enter the file name for the board: ");
     let filename = String::from("./unsolved/") + &get_input();
+
     let mut board = read_file(filename);
     println!("\nThe starting board:");
 
@@ -37,10 +38,50 @@ fn main() {
     if solve_board(&mut board) == true {
         println!("\nSolution found!");
         display_board(&mut board);
+        write_to_file(&mut board);
     } else {
         println!("No solution found.");
     }
     process::exit(0);
+}
+
+/**
+ * Funcation to write the solved board to an output file.
+ *
+ * Arguments:
+ *      board - A mutable reference to the sudoku board
+ *
+ * Returns:
+ *      None
+ */
+fn write_to_file(board: &mut Vec<usize>) {
+    println!("\nEnter the output file: ");
+    let name = &get_input();
+    let mut outfile = File::create(Path::new("./solved/").join(name))
+        .unwrap_or_else(|err| panic!("Could not create the file: {}", err));
+    let mut solved: String = String::new();
+
+    for i in 0..SIZE {
+        if i % 3 == 0 && i != 0 {
+            solved = String::from(solved) + ("-------------------------\n");
+        }
+        for j in 0..SIZE {
+            if j % 3 == 0 && j != 0 {
+                solved = solved + (" | ");
+            }
+
+            if j == 8 {
+                solved = solved + &String::from(format!("{}", board[i * SIZE + j]));
+            } else {
+                solved = solved + &String::from(format!("{} ", board[i * SIZE + j]));
+            }
+        }
+        solved = solved + "\n";
+
+        outfile
+            .write_all(solved.as_bytes())
+            .unwrap_or_else(|err| panic!("Board couldn't be written: {}", err));
+    }
 }
 
 /**
@@ -85,7 +126,6 @@ fn display_board(grid: &mut Vec<usize>) {
  *
  */
 fn get_input() -> String {
-    println!("Pleae enter the file name for the board: ");
     let mut input = String::new();
 
     while input == String::new() {
