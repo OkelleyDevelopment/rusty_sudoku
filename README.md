@@ -1,4 +1,4 @@
-# Rustic Sudoku Solver
+# Rusty Sudoku Solver
 
 ![Project Title](./utils/project_title.png)
 
