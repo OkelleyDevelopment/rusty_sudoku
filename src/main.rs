@@ -31,16 +31,14 @@ fn main() {
     let filename = String::from("./unsolved/") + &get_input();
 
     let mut board = read_file(filename);
-    println!("\nThe starting board:");
-
-    display_board(&mut board);
+    println!("\nThe starting board:\n {}", display_board(&mut board));
 
     if solve_board(&mut board) == true {
-        println!("\nSolution found!");
-        display_board(&mut board);
-        write_to_file(&mut board);
+        let solution = display_board(&mut board);
+        println!("\nSolution found!\n {}", solution);
+        write_to_file(solution);
     } else {
-        println!("No solution found.");
+        println!("No solution found, the file will not be written.");
     }
     process::exit(0);
 }
@@ -54,63 +52,46 @@ fn main() {
  * Returns:
  *      None
  */
-fn write_to_file(board: &mut Vec<usize>) {
+fn write_to_file(solution: String) {
     println!("\nEnter the output file: ");
-    let name = &get_input();
-    let mut outfile = File::create(Path::new("./solved/").join(name))
+    let mut outfile = File::create(Path::new("./solved/").join(&get_input()))
         .unwrap_or_else(|err| panic!("Could not create the file: {}", err));
-    let mut solved: String = String::new();
-
-    for i in 0..SIZE {
-        if i % 3 == 0 && i != 0 {
-            solved = solved + "-------------------------\n";
-        }
-        for j in 0..SIZE {
-            if j % 3 == 0 && j != 0 {
-                solved = solved + (" | ");
-            }
-
-            if j == 8 {
-                solved = solved + &String::from(format!("{}", board[i * SIZE + j]));
-            } else {
-                solved = solved + &String::from(format!("{} ", board[i * SIZE + j]));
-            }
-        }
-        solved = solved + "\n";
-    }
     outfile
-        .write_all(solved.as_bytes())
+        .write_all(solution.as_bytes())
         .unwrap_or_else(|err| panic!("Board couldn't be written: {}", err));
 }
 
 /**
- * A function to display the board.
+ * A function that builds up a string representing the board to be
+ * displayed.
  *
  * Arguments:
  *      grid - the game board being printed
  *
  * Returns:
- *      None
+ *      String - the string representing the board to be printed or written to
+ *              a file.
  */
-fn display_board(grid: &mut Vec<usize>) {
+fn display_board(grid: &mut Vec<usize>) -> String {
+    let mut board: String = String::new();
+
     for i in 0..SIZE {
         if i % 3 == 0 && i != 0 {
-            print!("-------------------------\n");
+            board = board + "-------------------------\n";
         }
         for j in 0..SIZE {
             if j % 3 == 0 && j != 0 {
-                print!(" | ");
+                board = board + " | ";
             }
 
             if j == 8 {
-                print!("{}", grid[i * SIZE + j]);
+                board = board + &String::from(format!("{}\n", grid[i * SIZE + j]));
             } else {
-                print!("{} ", grid[i * SIZE + j]);
+                board = board + &String::from(format!("{} ", grid[i * SIZE + j]));
             }
-            io::stdout().flush().expect("Could not flush");
         }
-        println!(" ");
     }
+    return board;
 }
 
 /**
