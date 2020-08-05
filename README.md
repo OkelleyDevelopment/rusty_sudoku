@@ -1,6 +1,6 @@
 # Rustic Sudoku Solver
 
-![Project Title]("./utils/project_title.png")
+![Project Title](./utils/project_title.png)
 
 ## Motivation
 
