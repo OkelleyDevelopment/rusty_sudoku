@@ -21,7 +21,7 @@ git clone https://github.com/OkelleyDevelopment/rusty_sudoku.git
 
 ## Program Compilation and Execution
 
-1. Inside the project `./src/` directory, run the command:
+1. Inside the project `src/` directory, run the command:
 
 ```bash
 cargo run
